@@ -6,5 +6,6 @@ urlpatterns = [
     path('', home_redirect),
     path('login/', login, name='login'),
     path('signup/', signup, name='signup'),
- 
+    path('dashboard/', dashboard, name='dashboard'),
+    path('logout/', logout_view, name='logout'),
 ]

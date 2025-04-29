@@ -98,5 +98,56 @@ def signup(request):
     return render(request, "signup.html", {"form": form})
 
 
+@login_required(login_url='login')
+def dashboard(request):
+    query = request.GET.get('query')
+    results = None
+
+    if query:
+        headers = {
+            'Accept': 'application/json'
+        }
+        base_url = "https://api.openverse.engineering/v1"
+
+        try:
+            image_response = requests.get(f"{base_url}/images", params={"q": query}, headers=headers)
+            images = image_response.json().get("results", []) if image_response.status_code == 200 else []
+
+            audio_response = requests.get(f"{base_url}/audio", params={"q": query}, headers=headers)
+            audio = audio_response.json().get("results", []) if audio_response.status_code == 200 else []
+
+            dummy_videos = [
+                {
+                    "url": "https://www.w3schools.com/html/mov_bbb.mp4",
+                    "title": "Sample Video 1"
+                },
+                {
+                    "url": "https://www.w3schools.com/html/movie.mp4",
+                    "title": "Sample Video 2"
+                }
+            ]
+
+            results = {
+                "images": images[:10],
+                "audio": audio[:5],
+                "videos": dummy_videos
+            }
+
+        except requests.RequestException as e:
+            messages.error(request, f"Error fetching results: {str(e)}")
+
+    return render(request, "dashboard.html", {
+        "results": results,
+        "query": query,
+        "username": request.user.username
+    })
+
+
+def logout_view(request):
+    auth_logout(request)
+    messages.success(request, "You have been logged out successfully.")
+    return redirect('login')
+
+
 def home_redirect(request):
     return redirect('login')
